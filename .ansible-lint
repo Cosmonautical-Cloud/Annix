@@ -1,0 +1,17 @@
+---
+profile: moderate
+
+exclude_paths:
+  - .github/
+
+skip_list:
+  # The command/argv form is required here: nixos-rebuild and nix flake
+  # update's own changed-ness can't be derived from their output, and no
+  # built-in module wraps them.
+  - no-changed-when
+  # These are public, cross-role inventory variables (annix_nixos_config,
+  # annix_rebuild_action, etc.) the user sets directly in their own
+  # group_vars/host_vars - the collection only has one role today, but a
+  # second (e.g. the garbage-collection role tracked in an issue) should
+  # share the same annix_ prefix rather than diverging per role.
+  - var-naming[no-role-prefix]

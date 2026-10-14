@@ -1,0 +1,9 @@
+---
+galaxy_info:
+  author: Violet Caulfield
+  description: >-
+    Templates NixOS configuration files from Ansible inventory data and
+    (optionally) runs nixos-rebuild.
+  license: GPL-3.0-only
+  min_ansible_version: "2.15"
+dependencies: []

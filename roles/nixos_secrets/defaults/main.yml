@@ -1,0 +1,16 @@
+---
+# Path (on the target host) to the sops-encrypted file to manage. Its
+# directory must already contain (or inherit from a parent) a .sops.yaml
+# with a creation_rule matching this path, so sops knows who can decrypt it -
+# Annix never manages recipients/keys itself.
+annix_secrets_file: /etc/nixos/secrets.yaml
+
+# Flat map of secret name -> plaintext value to ensure are set in
+# annix_secrets_file. Supply this from an ansible-vault-encrypted var -
+# never commit plaintext values. Only top-level keys are supported; nested
+# paths aren't.
+annix_secrets: {}
+
+# Path to the host's age private key, used to decrypt annix_secrets_file when
+# reading/updating it - sops-nix's own default sops.age.keyFile location.
+annix_secrets_age_key_file: /var/lib/sops-nix/key.txt

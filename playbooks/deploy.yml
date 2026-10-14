@@ -3,6 +3,11 @@
   hosts: all
   gather_facts: true
   tasks:
+    - name: Set secrets ahead of any rebuild that depends on them
+      ansible.builtin.include_role:
+        name: nixos_secrets
+      when: annix_secrets | default({}) | length > 0
+
     - name: Template and apply NixOS configuration
       ansible.builtin.include_role:
         name: nixos_config

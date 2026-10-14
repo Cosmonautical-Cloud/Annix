@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented here. Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); this project follows [semantic versioning](https://semver.org/).
 
+## [0.2.0] - 2026-10-13
+
+### Added
+
+- New `nixos_secrets` role: reconciles a declarative `annix_secrets` map (name -> plaintext value, meant to be sourced from an `ansible-vault`-encrypted var) into a sops-encrypted file on the target host, decrypting only in memory to compare before writing so a repeat run with nothing changed is a no-op. Never manages `.sops.yaml`/recipients or writes plaintext secret values to disk or Ansible's logs.
+- `playbooks/deploy.yml` now also runs `nixos_secrets` (when `annix_secrets` is set) before templating/rebuilding, so secrets are in place before any rebuild that depends on them.
+
 ## [0.1.0] - 2026-10-13
 
 ### Added

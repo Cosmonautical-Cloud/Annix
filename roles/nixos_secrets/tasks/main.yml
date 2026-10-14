@@ -1,0 +1,35 @@
+---
+- name: "Check whether the secrets file already exists: {{ annix_secrets_file }}"
+  become: true
+  ansible.builtin.stat:
+    path: "{{ annix_secrets_file }}"
+  register: annix_secrets_file_stat
+
+- name: Seed an empty encrypted secrets file
+  become: true
+  when: not annix_secrets_file_stat.stat.exists
+  block:
+    - name: Write an empty document
+      ansible.builtin.copy:
+        content: "{}\n"
+        dest: "{{ annix_secrets_file }}"
+        owner: root
+        group: root
+        mode: '0600'
+
+    - name: Encrypt it in place
+      ansible.builtin.command:
+        argv:
+          - sops
+          - --encrypt
+          - --in-place
+          - "{{ annix_secrets_file }}"
+      changed_when: true
+
+- name: "Reconcile secrets in the secrets file: {{ annix_secrets_file }}"
+  ansible.builtin.include_tasks: set_secret.yml
+  loop: "{{ annix_secrets | dict2items }}"
+  loop_control:
+    loop_var: annix_secret
+    label: "{{ annix_secret.key }}"
+  no_log: true

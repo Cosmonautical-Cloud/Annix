@@ -1,0 +1,9 @@
+---
+galaxy_info:
+  author: Violet Caulfield
+  description: >-
+    Sets secret values in a sops-encrypted file on a NixOS host, without ever
+    writing plaintext secrets to disk or Ansible logs.
+  license: GPL-3.0-only
+  min_ansible_version: "2.15"
+dependencies: []

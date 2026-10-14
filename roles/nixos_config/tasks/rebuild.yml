@@ -1,0 +1,23 @@
+---
+- name: Update flake lock
+  ansible.builtin.command:
+    cmd: nix flake update
+    chdir: "{{ annix_nixos_config_dir }}"
+  when:
+    - annix_flake | bool
+    - annix_update_flake_lock | bool
+  changed_when: true
+
+- name: Build nixos-rebuild command
+  ansible.builtin.set_fact:
+    annix_rebuild_cmd: >-
+      {{ ['nixos-rebuild', annix_rebuild_action]
+         + (['--flake', annix_flake_path] if annix_flake | bool else [])
+         + (['--upgrade'] if (not annix_flake | bool and annix_upgrade_channels | bool) else [])
+         + annix_rebuild_extra_args }}
+
+- name: Run nixos-rebuild {{ annix_rebuild_action }}
+  ansible.builtin.command:
+    argv: "{{ annix_rebuild_cmd }}"
+  register: annix_rebuild_result
+  changed_when: true

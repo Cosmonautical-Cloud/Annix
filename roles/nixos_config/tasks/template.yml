@@ -1,0 +1,22 @@
+---
+- name: Render {{ annix_nixos_file.key }}
+  ansible.builtin.set_fact:
+    annix_nixos_rendered_content: "{{ annix_nixos_function_args }}:\n{{ annix_nixos_file.value | cosmonautical.nixify.to_nix }}"
+
+- name: Validate it parses before writing {{ annix_nixos_file.key }}
+  cosmonautical.nixify.nix_check:
+    content: "{{ annix_nixos_rendered_content }}"
+  when: annix_validate | bool
+
+- name: Write {{ annix_nixos_file.key }}
+  ansible.builtin.copy:
+    content: "{{ annix_nixos_rendered_content }}\n"
+    dest: "{{ annix_nixos_config_dir }}/{{ annix_nixos_file.key }}"
+    owner: root
+    group: root
+    mode: '0644'
+  register: annix_nixos_file_result
+
+- name: Record that at least one NixOS config file changed
+  ansible.builtin.set_fact:
+    annix_nixos_config_changed: "{{ annix_nixos_config_changed | default(false) or annix_nixos_file_result.changed }}"

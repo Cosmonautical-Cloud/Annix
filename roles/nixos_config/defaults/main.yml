@@ -1,0 +1,51 @@
+---
+# Destination directory for templated NixOS configuration files.
+annix_nixos_config_dir: /etc/nixos
+
+# The configuration.nix attrset body, as nested YAML - converted to Nix by
+# cosmonautical.nixify. Only used by annix_nixos_files' default below.
+annix_nixos_config: {}
+
+# Mapping of filename (relative to annix_nixos_config_dir) -> the Nix
+# attrset to render into it. Defaults to templating only configuration.nix;
+# set this directly instead to template additional files (e.g. a split-out
+# networking.nix) in the same run.
+annix_nixos_files: "{{ {'configuration.nix': annix_nixos_config} }}"
+
+# Arguments the generated file's `{ ... }:` function header declares - the
+# de facto standard for a NixOS module.
+annix_nixos_function_args: "{ config, pkgs, lib, ... }"
+
+# Parse-check every rendered file (cosmonautical.nixify.nix_check) before
+# it's written to annix_nixos_config_dir.
+annix_validate: true
+
+# Whether to run nixos-rebuild at all after templating - set to false to
+# only template the files (e.g. to review `--diff` output) without applying.
+annix_rebuild: true
+
+# nixos-rebuild subcommand: switch, boot, test, dry-build or build.
+annix_rebuild_action: switch
+
+# Use a flake-based configuration instead of the NixOS channel.
+annix_flake: false
+# Flake reference, e.g. "/etc/nixos#violet-nixos" - required when annix_flake is true.
+annix_flake_path: ""
+
+# Update the flake's locked inputs (`nix flake update`) before rebuilding.
+# Only meaningful when annix_flake is true. Opt-in since it changes package
+# versions, not just applied config edits.
+annix_update_flake_lock: false
+
+# Update NixOS channels (nixos-rebuild's own --upgrade) before rebuilding.
+# Only meaningful when annix_flake is false. Same opt-in reasoning as above.
+annix_upgrade_channels: false
+
+# Extra arguments appended verbatim to the nixos-rebuild command line.
+annix_rebuild_extra_args: []
+
+# Rebuild only when a templated file actually changed on this run. Set to
+# true to force a rebuild/activation even when nothing changed locally (e.g.
+# after a channel/flake-input update, which still needs nixos-rebuild to
+# run even though no template content changed).
+annix_force_rebuild: false

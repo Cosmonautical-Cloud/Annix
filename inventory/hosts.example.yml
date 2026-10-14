@@ -1,0 +1,25 @@
+---
+all:
+  vars:
+    ansible_user: youruser
+
+your-nixos-hosts:
+  hosts:
+    violet-nixos.example.com:
+      # Rendered to /etc/nixos/configuration.nix via cosmonautical.nixify.
+      annix_nixos_config:
+        imports:
+          __nix_raw__: "[ ./hardware-configuration.nix ]"
+        networking:
+          hostName: violet-nixos
+          firewall:
+            enable: true
+        services:
+          openssh:
+            enable: true
+        system:
+          stateVersion: "24.05"
+
+      # Opt-in: pull a newer NixOS channel before rebuilding. Leave false to
+      # only apply configuration.nix edits with the already-pulled channel.
+      annix_upgrade_channels: false

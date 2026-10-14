@@ -1,0 +1,28 @@
+---
+namespace: cosmonautical
+name: annix
+authors:
+  - Violet Caulfield
+version: 0.1.0
+readme: README.md
+description: >-
+  Templates NixOS configuration files from an Ansible Automation Platform
+  inventory and runs nixos-rebuild.
+license:
+  - GPL-3.0-only
+tags:
+  - nixos
+  - nix
+  - homelab
+  - infrastructure
+repository: https://github.com/Cosmonautical-Cloud/Annix
+homepage: https://github.com/Cosmonautical-Cloud/Annix
+issues: https://github.com/Cosmonautical-Cloud/Annix/issues
+dependencies:
+  cosmonautical.nixify: ">=0.1.0"
+# Never ship a local inventory (it can hold credentials) or the local
+# collection cache.
+build_ignore:
+  - .ansible
+  - inventory/hosts.yml
+  - importer_result.json

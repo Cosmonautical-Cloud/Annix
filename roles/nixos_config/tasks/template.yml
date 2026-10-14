@@ -1,7 +1,17 @@
 ---
+- name: Determine function header for {{ annix_nixos_file.key }}
+  ansible.builtin.set_fact:
+    annix_nixos_file_header: >-
+      {{ annix_nixos_file_function_args.get(annix_nixos_file.key,
+      annix_nixos_function_args) }}
+
+- name: Determine rendered prefix for {{ annix_nixos_file.key }}
+  ansible.builtin.set_fact:
+    annix_nixos_file_prefix: "{{ (annix_nixos_file_header ~ ':\n') if annix_nixos_file_header | length > 0 else '' }}"
+
 - name: Render {{ annix_nixos_file.key }}
   ansible.builtin.set_fact:
-    annix_nixos_rendered_content: "{{ annix_nixos_function_args }}:\n{{ annix_nixos_file.value | cosmonautical.nixify.to_nix }}"
+    annix_nixos_rendered_content: "{{ annix_nixos_file_prefix }}{{ annix_nixos_file.value | cosmonautical.nixify.to_nix }}"
 
 - name: Validate it parses before writing {{ annix_nixos_file.key }}
   cosmonautical.nixify.nix_check:

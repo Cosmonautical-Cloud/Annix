@@ -13,8 +13,16 @@ annix_nixos_config: {}
 annix_nixos_files: "{{ {'configuration.nix': annix_nixos_config} }}"
 
 # Arguments the generated file's `{ ... }:` function header declares - the
-# de facto standard for a NixOS module.
+# de facto standard for a NixOS module. Applies to every file in
+# annix_nixos_files unless overridden per-file in annix_nixos_file_function_args.
 annix_nixos_function_args: "{ config, pkgs, lib, ... }"
+
+# Per-file override of the above, keyed by the same filenames used in
+# annix_nixos_files. A file not listed here falls back to
+# annix_nixos_function_args. Set a file's entry to "" to render it as a bare
+# attrset with no function header at all (e.g. flake.nix, whose top level
+# isn't a NixOS module function).
+annix_nixos_file_function_args: {}
 
 # Parse-check every rendered file (cosmonautical.nixify.nix_check) before
 # it's written to annix_nixos_config_dir.

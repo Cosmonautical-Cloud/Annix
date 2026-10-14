@@ -27,9 +27,8 @@
       changed_when: true
 
 - name: "Reconcile secrets in the secrets file: {{ annix_secrets_file }}"
-  ansible.builtin.include_tasks: set_secret.yml
-  loop: "{{ annix_secrets | dict2items }}"
-  loop_control:
-    loop_var: annix_secret
-    label: "{{ annix_secret.key }}"
+  ansible.builtin.include_tasks: walk_secrets.yml
+  vars:
+    annix_secrets_path: ""
+    annix_secrets_subtree: "{{ annix_secrets }}"
   no_log: true

@@ -5,10 +5,9 @@
 # Annix never manages recipients/keys itself.
 annix_secrets_file: /etc/nixos/secrets.yaml
 
-# Flat map of secret name -> plaintext value to ensure are set in
-# annix_secrets_file. Supply this from an ansible-vault-encrypted var -
-# never commit plaintext values. Only top-level keys are supported; nested
-# paths aren't.
+# Map of secret name -> plaintext value (or a nested map of the same, to any
+# depth) to ensure are set in annix_secrets_file. Supply this from an
+# ansible-vault-encrypted var - never commit plaintext values.
 annix_secrets: {}
 
 # Path to the host's age private key, used to decrypt annix_secrets_file when

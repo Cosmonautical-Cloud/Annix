@@ -9,10 +9,10 @@ This role **does not** manage `.sops.yaml` or age/PGP keys - the target file's d
 | Variable | Default | Purpose |
 |---|---|---|
 | `annix_secrets_file` | `/etc/nixos/secrets.yaml` | The sops-encrypted file to reconcile |
-| `annix_secrets` | `{}` | Flat map of secret name -> plaintext value. Source this from an `ansible-vault`-encrypted var, never plain inventory |
+| `annix_secrets` | `{}` | Map of secret name -> plaintext value, nestable to any depth (e.g. per-player secrets). Source this from an `ansible-vault`-encrypted var, never plain inventory |
 | `annix_secrets_age_key_file` | `/var/lib/sops-nix/key.txt` | The host's age private key, used to decrypt `annix_secrets_file` for comparison/updates (sops-nix's own default `sops.age.keyFile`) |
 
-Only flat, top-level keys are supported - nested paths aren't.
+Nested maps become sops attribute paths - `{violet: {nexusmods: "..."}}` sets `["violet"]["nexusmods"]`.
 
 ## Requirements
 
@@ -27,7 +27,10 @@ annix_secrets_file: /etc/nixos/secrets.yaml
 
 # host_vars/atlantis/vault.yml (ansible-vault encrypted)
 annix_secrets:
-  some_api_token: "..."
+  violet:
+    nexusmods: "..."
+  rachel:
+    romm: "..."
 ```
 
 Each run decrypts and compares the current value of every key in `annix_secrets` before writing, so a repeat run with no changes is a no-op.

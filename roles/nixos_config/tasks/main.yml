@@ -1,13 +1,11 @@
 ---
 - name: Template NixOS configuration files
-  become: true
   ansible.builtin.include_tasks: template.yml
   loop: "{{ annix_nixos_files | dict2items }}"
   loop_control:
     loop_var: annix_nixos_file
 
 - name: Rebuild NixOS
-  become: true
   ansible.builtin.include_tasks: rebuild.yml
   when:
     - annix_rebuild | bool

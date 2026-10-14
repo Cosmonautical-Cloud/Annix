@@ -9,6 +9,7 @@
   when: annix_validate | bool
 
 - name: Write {{ annix_nixos_file.key }}
+  become: true
   ansible.builtin.copy:
     content: "{{ annix_nixos_rendered_content }}\n"
     dest: "{{ annix_nixos_config_dir }}/{{ annix_nixos_file.key }}"

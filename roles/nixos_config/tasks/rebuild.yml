@@ -1,5 +1,6 @@
 ---
 - name: Update flake lock
+  become: true
   ansible.builtin.command:
     cmd: nix flake update
     chdir: "{{ annix_nixos_config_dir }}"
@@ -17,6 +18,7 @@
          + annix_rebuild_extra_args }}
 
 - name: Run nixos-rebuild {{ annix_rebuild_action }}
+  become: true
   ansible.builtin.command:
     argv: "{{ annix_rebuild_cmd }}"
   register: annix_rebuild_result

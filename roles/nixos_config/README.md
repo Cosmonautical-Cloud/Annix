@@ -9,7 +9,8 @@ Templates one or more `.nix` files from Ansible inventory data (via [`cosmonauti
 | `annix_nixos_config_dir` | `/etc/nixos` | Where files are written |
 | `annix_nixos_config` | `{}` | The `configuration.nix` attrset body, as nested YAML |
 | `annix_nixos_files` | `{configuration.nix: annix_nixos_config}` | Override to template more than one file in the same run |
-| `annix_nixos_function_args` | `{ config, pkgs, lib, ... }` | Each file's function header |
+| `annix_nixos_function_args` | `{ config, pkgs, lib, ... }` | Default function header, applied to every file in `annix_nixos_files` |
+| `annix_nixos_file_function_args` | `{}` | Per-file header override, keyed by filename - set a file to `""` for a bare attrset with no header (e.g. `flake.nix`) |
 | `annix_validate` | `true` | Parse-check every rendered file (`nix-instantiate --parse`) before writing it |
 | `annix_rebuild` | `true` | Whether to run `nixos-rebuild` at all after templating |
 | `annix_rebuild_action` | `switch` | `switch`, `boot`, `test`, `dry-build` or `build` |

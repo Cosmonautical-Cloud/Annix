@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here. Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); this project follows [semantic versioning](https://semver.org/).
 
+## [0.2.0] - 2026-10-13
+
+### Added
+
+- `annix_nixos_file_function_args`: per-file override of each templated file's function header, keyed by the same filenames used in `annix_nixos_files`. Falls back to `annix_nixos_function_args` when a file isn't listed, and an empty string renders a bare attrset with no header at all - needed for files like `flake.nix` whose top level isn't a NixOS module function.
+
 ## [0.1.0] - 2026-10-13
 
 ### Added

@@ -4,6 +4,10 @@
   ansible.builtin.command:
     cmd: nix flake update
     chdir: "{{ annix_nixos_config_dir }}"
+  environment:
+    # A fresh NixOS install may not have nix-command/flakes enabled yet -
+    # don't rely on it already being declared in the running system's config.
+    NIX_CONFIG: "experimental-features = nix-command flakes"
   when:
     - annix_flake | bool
     - annix_update_flake_lock | bool
@@ -21,5 +25,7 @@
   become: true
   ansible.builtin.command:
     argv: "{{ annix_rebuild_cmd }}"
+  environment:
+    NIX_CONFIG: "experimental-features = nix-command flakes"
   register: annix_rebuild_result
   changed_when: true

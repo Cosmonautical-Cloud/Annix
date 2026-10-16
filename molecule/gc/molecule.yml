@@ -1,0 +1,22 @@
+---
+# Garbage collection: prepare.yml gives the container five system profile
+# generations, and the role is asked to keep only the last two.
+driver:
+  name: docker
+platforms:
+  - name: annix-gc
+    image: docker.io/nixos/nix:latest
+    pre_build_image: true
+    command: sleep infinity
+    env:
+      # /usr/local/bin first so the sudo and nixos-rebuild stubs from
+      # shared/prepare.yml are found; the rest is the image's own PATH.
+      PATH: /usr/local/bin:/root/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/nix/var/nix/profiles/default/sbin
+provisioner:
+  name: ansible
+  inventory:
+    host_vars:
+      annix-gc:
+        ansible_python_interpreter: /opt/python3/bin/python3
+verifier:
+  name: ansible

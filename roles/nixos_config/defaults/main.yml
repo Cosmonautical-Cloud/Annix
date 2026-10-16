@@ -57,3 +57,14 @@ annix_rebuild_extra_args: []
 # after a channel/flake-input update, which still needs nixos-rebuild to
 # run even though no template content changed).
 annix_force_rebuild: false
+
+# Garbage-collect old system generations and unreachable store paths after
+# templating/rebuilding. Opt-in, since deleted generations can't be rolled
+# back to.
+annix_gc_enabled: false
+
+# How many of the most recent system profile generations to keep when
+# annix_gc_enabled is true (the current generation is always kept). 0 or
+# null keeps every generation; only store paths nothing references are
+# collected.
+annix_gc_keep: 10

@@ -1,0 +1,8 @@
+---
+annix_rebuild: false
+annix_gc_enabled: true
+annix_gc_keep: 2
+
+annix_nixos_config:
+  system:
+    stateVersion: "24.05"

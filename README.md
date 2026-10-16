@@ -42,7 +42,7 @@ Then run:
 ./deploy.zsh
 ```
 
-This templates `/etc/nixos/configuration.nix` (parse-checked first via Nixify's `nix_check` module) and runs `nixos-rebuild switch` — but only when a templated file actually changed on that run, so a repeat run with no edits is a no-op. See the [`nixos_config` role's README](roles/nixos_config/README.md) for every variable, including flake support, channel upgrades, and picking a different `nixos-rebuild` action (`boot`, `test`, `dry-build`, `build`).
+This templates `/etc/nixos/configuration.nix` (parse-checked first via Nixify's `nix_check` module) and runs `nixos-rebuild switch` — but only when a templated file actually changed on that run, so a repeat run with no edits is a no-op. See the [`nixos_config` role's README](roles/nixos_config/README.md) for every variable, including flake support, channel upgrades, and picking a different `nixos-rebuild` action (`boot`, `test`, `dry-build`, `build`) and opt-in garbage collection of old generations (`annix_gc_enabled`, `annix_gc_keep`).
 
 Preview changes without applying them:
 
@@ -56,8 +56,9 @@ Preview changes without applying them:
 
 - `default` — channel mode: `configuration.nix` from `annix_nixos_config`, `--upgrade`, a non-default action and extra args, plus a config that fails validation and must never be written.
 - `flake` — flake mode: several files via `annix_nixos_files`, `flake.nix` with no function header, `--flake`.
+- `gc` — garbage collection: five system generations pruned down to `annix_gc_keep: 2`, the pruned generations' store paths collected, and `annix_gc_keep: 0`/`null` deleting no generations.
 
-Both check that a second run changes nothing and doesn't rebuild again. They need Docker locally (`pip install molecule "molecule-plugins[docker]"` and `ansible-galaxy collection install community.docker`); CI runs them on every PR.
+All three check that a second run changes nothing and doesn't rebuild (or collect anything) again. They need Docker locally (`pip install molecule "molecule-plugins[docker]"` and `ansible-galaxy collection install community.docker`); CI runs them on every PR.
 
 ## License
 

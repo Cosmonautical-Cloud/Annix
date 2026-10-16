@@ -23,3 +23,8 @@ your-nixos-hosts:
       # Opt-in: pull a newer NixOS channel before rebuilding. Leave false to
       # only apply configuration.nix edits with the already-pulled channel.
       annix_upgrade_channels: false
+
+      # Opt-in: after each run, delete all but the last annix_gc_keep system
+      # generations and collect the store paths they leave unreferenced.
+      annix_gc_enabled: false
+      annix_gc_keep: 10

@@ -6,7 +6,8 @@ All notable changes to this project are documented here. Format based on [Keep a
 
 ### Added
 
-- Molecule scenarios (`default` for channels, `flake` for flakes) that run the `nixos_config` role in a `nixos/nix` container, checking rendered files, the `nixos-rebuild` command line, idempotence (no second rebuild) and that a config failing validation is never written. Run with `./molecule.zsh`; CI runs them on every PR.
+- Opt-in garbage collection in the `nixos_config` role (#1): with `annix_gc_enabled: true`, each run ends by deleting all but the last `annix_gc_keep` (default `10`) system profile generations and running `nix-collect-garbage`. `annix_gc_keep: 0` or `null` keeps every generation. Reports `changed` only when something was actually deleted.
+- Molecule scenarios (`default` for channels, `flake` for flakes, `gc` for garbage collection) that run the `nixos_config` role in a `nixos/nix` container, checking rendered files, the `nixos-rebuild` command line, idempotence (no second rebuild) and that a config failing validation is never written. Run with `./molecule.zsh`; CI runs them on every PR.
 
 ## [0.2.0] - 2026-10-13
 

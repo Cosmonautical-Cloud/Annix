@@ -16,6 +16,6 @@ skip_list:
   # These are public, cross-role inventory variables (annix_nixos_config,
   # annix_rebuild_action, etc.) the user sets directly in their own
   # group_vars/host_vars - the collection only has one role today, but a
-  # second (e.g. the garbage-collection role tracked in an issue) should
-  # share the same annix_ prefix rather than diverging per role.
+  # second should share the same annix_ prefix rather than diverging per
+  # role.
   - var-naming[no-role-prefix]

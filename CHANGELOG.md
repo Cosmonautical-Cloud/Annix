@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here. Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); this project follows [semantic versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- Molecule scenarios (`default` for channels, `flake` for flakes) that run the `nixos_config` role in a `nixos/nix` container, checking rendered files, the `nixos-rebuild` command line, idempotence (no second rebuild) and that a config failing validation is never written. Run with `./molecule.zsh`; CI runs them on every PR.
+
 ## [0.2.0] - 2026-10-13
 
 ### Added

@@ -20,9 +20,10 @@ homepage: https://github.com/Cosmonautical-Cloud/Annix
 issues: https://github.com/Cosmonautical-Cloud/Annix/issues
 dependencies:
   cosmonautical.nixify: ">=0.1.0"
-# Never ship a local inventory (it can hold credentials) or the local
-# collection cache.
+# Never ship a local inventory (it can hold credentials), the local
+# collection cache or the test scenarios.
 build_ignore:
   - .ansible
+  - molecule
   - inventory/hosts.yml
   - importer_result.json

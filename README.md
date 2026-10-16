@@ -50,6 +50,15 @@ Preview changes without applying them:
 ./check.zsh
 ```
 
+## Testing
+
+`./lint.zsh` runs ansible-lint. `./molecule.zsh` runs the [Molecule](https://ansible.readthedocs.io/projects/molecule/) scenarios, which apply the `nixos_config` role inside a `nixos/nix` container (real Nix for parse-checking, a stub `nixos-rebuild` that records how it was called):
+
+- `default` — channel mode: `configuration.nix` from `annix_nixos_config`, `--upgrade`, a non-default action and extra args, plus a config that fails validation and must never be written.
+- `flake` — flake mode: several files via `annix_nixos_files`, `flake.nix` with no function header, `--flake`.
+
+Both check that a second run changes nothing and doesn't rebuild again. They need Docker locally (`pip install molecule "molecule-plugins[docker]"` and `ansible-galaxy collection install community.docker`); CI runs them on every PR.
+
 ## License
 
 GPL-3.0-only.

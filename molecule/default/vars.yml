@@ -1,0 +1,21 @@
+---
+# Kept in a vars file rather than molecule.yml's host_vars so key order
+# survives into the rendered file (and verify.yml can compare it exactly).
+annix_rebuild_action: boot
+annix_upgrade_channels: true
+annix_rebuild_extra_args:
+  - --show-trace
+
+annix_nixos_config:
+  imports:
+    __nix_raw__: "[ ./hardware-configuration.nix ]"
+  networking:
+    hostName: annix-molecule
+    firewall:
+      allowedTCPPorts: [22, 80]
+  environment:
+    etc:
+      motd:
+        text: 'Managed by "Annix" - ${not interpolated}'
+  system:
+    stateVersion: "24.05"

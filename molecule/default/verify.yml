@@ -1,0 +1,94 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: false
+  vars:
+    expected_configuration_nix: |
+      { config, pkgs, lib, ... }:
+      {
+        imports = [ ./hardware-configuration.nix ];
+        networking = {
+          hostName = "annix-molecule";
+          firewall = {
+            allowedTCPPorts = [
+              22
+              80
+            ];
+          };
+        };
+        environment = {
+          etc = {
+            motd = {
+              text = "Managed by \"Annix\" - \${not interpolated}";
+            };
+          };
+        };
+        system = {
+          stateVersion = "24.05";
+        };
+      }
+  tasks:
+    - name: Read rendered configuration.nix
+      ansible.builtin.slurp:
+        src: /etc/nixos/configuration.nix
+      register: configuration_nix
+
+    - name: Stat rendered configuration.nix
+      ansible.builtin.stat:
+        path: /etc/nixos/configuration.nix
+      register: configuration_nix_stat
+
+    - name: Check configuration.nix content and permissions
+      ansible.builtin.assert:
+        that:
+          - configuration_nix.content | b64decode == expected_configuration_nix
+          - configuration_nix_stat.stat.mode == '0644'
+          - configuration_nix_stat.stat.pw_name == 'root'
+
+    # converge + idempotence ran the role twice, but only the first run
+    # changed a file, so nixos-rebuild must have run exactly once.
+    - name: Read nixos-rebuild invocations
+      ansible.builtin.slurp:
+        src: /tmp/nixos-rebuild.calls
+      register: rebuild_calls
+
+    - name: Check nixos-rebuild ran once, with the expected arguments
+      ansible.builtin.assert:
+        that:
+          - (rebuild_calls.content | b64decode).splitlines() == ['boot --upgrade --show-trace']
+
+    - name: Apply a configuration that doesn't parse
+      block:
+        - name: Run the role with invalid Nix
+          ansible.builtin.include_role:
+            name: cosmonautical.annix.nixos_config
+          vars:
+            annix_nixos_config_dir: /tmp/annix-invalid
+            annix_nixos_config:
+              broken:
+                __nix_raw__: "{ unclosed"
+
+        - name: Fail if the invalid configuration was accepted
+          ansible.builtin.fail:
+            msg: nix_check should have rejected the invalid configuration
+      rescue:
+        - name: Check the role failed on validation, not elsewhere
+          ansible.builtin.assert:
+            that:
+              - ansible_failed_task.name is search('Validate it parses')
+
+    - name: Stat the invalid configuration's destination
+      ansible.builtin.stat:
+        path: /tmp/annix-invalid/configuration.nix
+      register: invalid_stat
+
+    - name: Read nixos-rebuild invocations again
+      ansible.builtin.slurp:
+        src: /tmp/nixos-rebuild.calls
+      register: rebuild_calls_after
+
+    - name: Check nothing was written or rebuilt
+      ansible.builtin.assert:
+        that:
+          - not invalid_stat.stat.exists
+          - rebuild_calls_after.content == rebuild_calls.content

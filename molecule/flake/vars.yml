@@ -1,0 +1,24 @@
+---
+# Kept in a vars file rather than molecule.yml's host_vars so key order
+# survives into the rendered files (and verify.yml can compare them exactly).
+annix_flake: true
+annix_flake_path: /etc/nixos#annix-molecule
+
+annix_nixos_file_function_args:
+  flake.nix: ""
+
+annix_nixos_files:
+  flake.nix:
+    inputs:
+      nixpkgs:
+        url: github:NixOS/nixpkgs/nixos-24.05
+    outputs:
+      __nix_raw__: >-
+        { nixpkgs, ... }: {
+        nixosConfigurations.annix-molecule = nixpkgs.lib.nixosSystem {
+        modules = [ ./configuration.nix ]; }; }
+  configuration.nix:
+    networking:
+      hostName: annix-molecule
+    system:
+      stateVersion: "24.05"

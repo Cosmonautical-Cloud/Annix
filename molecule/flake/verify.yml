@@ -1,0 +1,52 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: false
+  vars:
+    # flake.nix's top level isn't a NixOS module, so no function header.
+    expected_files:
+      flake.nix: |
+        {
+          inputs = {
+            nixpkgs = {
+              url = "github:NixOS/nixpkgs/nixos-24.05";
+            };
+          };
+          outputs = { nixpkgs, ... }: { nixosConfigurations.annix-molecule = nixpkgs.lib.nixosSystem { modules = [ ./configuration.nix ]; }; };
+        }
+      configuration.nix: |
+        { config, pkgs, lib, ... }:
+        {
+          networking = {
+            hostName = "annix-molecule";
+          };
+          system = {
+            stateVersion = "24.05";
+          };
+        }
+  tasks:
+    - name: Read rendered files
+      ansible.builtin.slurp:
+        src: /etc/nixos/{{ item }}
+      loop: "{{ expected_files.keys() | list }}"
+      register: rendered_files
+
+    - name: Check rendered file content
+      ansible.builtin.assert:
+        that:
+          - item.content | b64decode == expected_files[item.item]
+      loop: "{{ rendered_files.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    # converge + idempotence ran the role twice, but only the first run
+    # changed a file, so nixos-rebuild must have run exactly once.
+    - name: Read nixos-rebuild invocations
+      ansible.builtin.slurp:
+        src: /tmp/nixos-rebuild.calls
+      register: rebuild_calls
+
+    - name: Check nixos-rebuild ran once, against the flake
+      ansible.builtin.assert:
+        that:
+          - (rebuild_calls.content | b64decode).splitlines() == ['switch --flake /etc/nixos#annix-molecule']

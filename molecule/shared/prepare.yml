@@ -1,0 +1,55 @@
+---
+# Shared by every scenario. The nixos/nix image gives us a real Nix
+# (so cosmonautical.nixify.nix_check parses for real), but it isn't NixOS:
+# no Python, no sudo, no nixos-rebuild and no /etc/nixos. Fill those gaps
+# just enough for the role to run end to end.
+- name: Prepare
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Install Python for Ansible
+      ansible.builtin.raw: >-
+        test -x /opt/python3/bin/python3 || {
+        mkdir -p /opt &&
+        nix --extra-experimental-features 'nix-command flakes'
+        build nixpkgs#python3 --out-link /opt/python3; }
+      changed_when: true
+
+    - name: Create stub directory
+      ansible.builtin.file:
+        path: /usr/local/bin
+        state: directory
+        mode: '0755'
+
+    # The container already runs as root, so `become: true` only needs a
+    # sudo that strips its own options and runs the rest of the command.
+    - name: Install sudo pass-through
+      ansible.builtin.copy:
+        dest: /usr/local/bin/sudo
+        mode: '0755'
+        content: |
+          #!/bin/sh
+          while [ $# -gt 0 ]; do
+            case "$1" in
+              -u|-g|-p|-C) shift 2 ;;
+              -*) shift ;;
+              *) break ;;
+            esac
+          done
+          exec "$@"
+
+    # Records each invocation's arguments instead of rebuilding anything,
+    # so verify.yml can check both the command line and how often it ran.
+    - name: Install nixos-rebuild stub
+      ansible.builtin.copy:
+        dest: /usr/local/bin/nixos-rebuild
+        mode: '0755'
+        content: |
+          #!/bin/sh
+          echo "$*" >> /tmp/nixos-rebuild.calls
+
+    - name: Create /etc/nixos
+      ansible.builtin.file:
+        path: /etc/nixos
+        state: directory
+        mode: '0755'

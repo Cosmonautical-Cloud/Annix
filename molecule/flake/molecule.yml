@@ -1,0 +1,24 @@
+---
+# Flake-based configuration: several files via annix_nixos_files, one of
+# them (flake.nix) rendered with no function header.
+driver:
+  name: docker
+platforms:
+  - name: annix-flake
+    image: docker.io/nixos/nix:latest
+    pre_build_image: true
+    command: sleep infinity
+    env:
+      # /usr/local/bin first so the sudo and nixos-rebuild stubs from
+      # prepare.yml are found; the rest is the image's own PATH.
+      PATH: /usr/local/bin:/root/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/nix/var/nix/profiles/default/sbin
+provisioner:
+  name: ansible
+  playbooks:
+    prepare: ../shared/prepare.yml
+  inventory:
+    host_vars:
+      annix-flake:
+        ansible_python_interpreter: /opt/python3/bin/python3
+verifier:
+  name: ansible

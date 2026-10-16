@@ -1,0 +1,36 @@
+---
+- name: Check annix_gc_keep
+  ansible.builtin.assert:
+    that:
+      - annix_gc_keep is none or (annix_gc_keep | string is match('^[0-9]+$'))
+    fail_msg: annix_gc_keep must be a non-negative integer, or 0/null to keep every generation
+    quiet: true
+
+- name: List system profile generations
+  become: true
+  ansible.builtin.command:
+    argv: [nix-env, --list-generations, --profile, /nix/var/nix/profiles/system]
+  register: annix_gc_generations
+  changed_when: false
+  check_mode: false
+
+- name: Delete system generations beyond annix_gc_keep
+  become: true
+  ansible.builtin.command:
+    argv: [nix-env, --delete-generations, "+{{ annix_gc_keep | int }}", --profile, /nix/var/nix/profiles/system]
+  register: annix_gc_delete_result
+  # The current generation is always kept, even when it isn't one of the
+  # last annix_gc_keep (e.g. after a rollback), so going by the listing
+  # alone could report a change on every run.
+  changed_when: annix_gc_delete_result.stderr is search('removing profile version')
+  when:
+    - annix_gc_keep | default(0, true) | int > 0
+    - annix_gc_generations.stdout_lines | select | list | length > annix_gc_keep | int
+
+- name: Collect garbage
+  become: true
+  ansible.builtin.command:
+    cmd: nix-collect-garbage
+  register: annix_gc_result
+  # Last line is "<n> store paths deleted, <size> freed".
+  changed_when: annix_gc_result.stdout is not search('^0 store paths deleted', multiline=True)

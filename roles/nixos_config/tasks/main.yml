@@ -10,3 +10,9 @@
   when:
     - annix_rebuild | bool
     - annix_force_rebuild | bool or annix_nixos_config_changed | default(false)
+
+# After the rebuild, so the generation it just created counts towards
+# annix_gc_keep rather than being missed.
+- name: Collect Nix garbage
+  ansible.builtin.include_tasks: gc.yml
+  when: annix_gc_enabled | bool

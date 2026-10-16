@@ -1,6 +1,6 @@
 # nixos_config
 
-Templates one or more `.nix` files from Ansible inventory data (via [`cosmonautical.nixify`](https://github.com/Cosmonautical-Cloud/Nixify)) into a NixOS host's `/etc/nixos`, then runs `nixos-rebuild` — but only when a templated file actually changed, so a run that touches nothing is a no-op.
+Templates one or more `.nix` files from Ansible inventory data (via [`cosmonautical.nixify`](https://github.com/Cosmonautical-Cloud/Nixify)) into a NixOS host's `/etc/nixos`, then runs `nixos-rebuild` — but only when a templated file actually changed, so a run that touches nothing is a no-op. It can also garbage-collect old system generations afterwards (opt-in).
 
 ## Variables
 
@@ -20,6 +20,12 @@ Templates one or more `.nix` files from Ansible inventory data (via [`cosmonauti
 | `annix_upgrade_channels` | `false` | Pass `--upgrade` to `nixos-rebuild` (opt-in, channel mode only) |
 | `annix_rebuild_extra_args` | `[]` | Extra CLI args appended verbatim |
 | `annix_force_rebuild` | `false` | Rebuild even when no templated file changed (e.g. after a channel/flake-input update) |
+| `annix_gc_enabled` | `false` | Garbage-collect after templating/rebuilding (opt-in — pruned generations can't be rolled back to) |
+| `annix_gc_keep` | `10` | System generations to keep when `annix_gc_enabled` is `true`; `0` or `null` keeps them all |
+
+## Garbage collection
+
+With `annix_gc_enabled: true`, every run ends (after any rebuild, so its new generation counts) by deleting all but the last `annix_gc_keep` generations of the system profile (`nix-env --delete-generations +N`) and then running `nix-collect-garbage` to free the store paths nothing references any more. The current generation is always kept, even after a rollback. Setting `annix_gc_keep` to `0` or `null` skips the generation pruning, so only paths that no generation uses are collected. Both steps report `changed` only when they actually deleted something.
 
 ## Example
 

@@ -1,0 +1,19 @@
+---
+- name: Prepare shared stubs
+  ansible.builtin.import_playbook: ../shared/prepare.yml
+
+# The nixos/nix image has no system profile, so give it five generations,
+# each pointing at its own small store path (recorded in
+# /tmp/annix-gen-<n>.path for verify.yml), for the role to prune.
+- name: Create system profile generations
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Add a store path per generation and switch the system profile to it
+      ansible.builtin.shell: >-
+        for n in 1 2 3 4 5; do
+        printf 'generation %s\n' "$n" > "/tmp/annix-gen-$n" &&
+        nix-store --add "/tmp/annix-gen-$n" > "/tmp/annix-gen-$n.path" &&
+        nix-env --profile /nix/var/nix/profiles/system --set "$(cat "/tmp/annix-gen-$n.path")" || exit 1;
+        done
+      changed_when: true

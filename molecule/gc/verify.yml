@@ -1,0 +1,67 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: false
+  vars_files:
+    - vars.yml
+  tasks:
+    - name: List system profile generations
+      ansible.builtin.command:
+        argv: [nix-env, --list-generations, --profile, /nix/var/nix/profiles/system]
+      register: generations
+      changed_when: false
+
+    - name: Check only the last two generations are left
+      ansible.builtin.assert:
+        that:
+          - generations.stdout_lines | map('split') | map('first') | list == ['4', '5']
+
+    - name: Read each generation's store path
+      ansible.builtin.slurp:
+        src: /tmp/annix-gen-{{ item }}.path
+      loop: [1, 2, 3, 4, 5]
+      register: generation_paths
+
+    - name: Stat each generation's store path
+      ansible.builtin.stat:
+        path: "{{ item.content | b64decode | trim }}"
+      loop: "{{ generation_paths.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+      register: generation_stats
+
+    - name: Check the pruned generations' store paths were collected
+      ansible.builtin.assert:
+        that:
+          - generation_stats.results | map(attribute='stat.exists') | list == [false, false, false, true, true]
+
+    - name: Add two more generations
+      ansible.builtin.shell: >-
+        for n in 6 7; do
+        printf 'generation %s\n' "$n" > "/tmp/annix-gen-$n" &&
+        nix-env --profile /nix/var/nix/profiles/system --set "$(nix-store --add "/tmp/annix-gen-$n")" || exit 1;
+        done
+      changed_when: true
+
+    - name: Run the role with annix_gc_keep set to 0
+      ansible.builtin.include_role:
+        name: cosmonautical.annix.nixos_config
+      vars:
+        annix_gc_keep: 0
+
+    - name: Run the role with annix_gc_keep set to null
+      ansible.builtin.include_role:
+        name: cosmonautical.annix.nixos_config
+      vars:
+        annix_gc_keep: ~
+
+    - name: List system profile generations again
+      ansible.builtin.command:
+        argv: [nix-env, --list-generations, --profile, /nix/var/nix/profiles/system]
+      register: generations_kept
+      changed_when: false
+
+    - name: Check no generation was deleted
+      ansible.builtin.assert:
+        that:
+          - generations_kept.stdout_lines | map('split') | map('first') | list == ['4', '5', '6', '7']
